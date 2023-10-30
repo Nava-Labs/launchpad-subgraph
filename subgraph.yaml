@@ -1,0 +1,71 @@
+specVersion: 0.0.5
+description: Camelot is a decentralized protocol for automated token exchange on Arbitrum.
+repository: https://github.com/CamelotLabs/v2-subgraph
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: LaunchpadReceipt
+    network: eosevm-testnet
+    source:
+      address: '0xBd67e3ccd95449A16d561D67AD4A37d83b03DEE8'
+      abi: LaunchpadReceipt
+      startBlock: 18714678
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/mappings/LaunchpadReceipt.ts
+      entities:
+        - Snapshot
+        - User
+      abis:
+        - name: LaunchpadReceipt
+          file: ./abis/LaunchpadReceipt.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+  - kind: ethereum/contract
+    name: FairAuctionFactory
+    network: eosevm-testnet
+    source:
+      address: '0x72076068Bd08f5D0AE541075f1E317b3B1d46d8f'
+      abi: FairAuctionFactory
+      startBlock: 18771474
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/mappings/FairAuctionFactory.ts
+      entities:
+        - FairAuctionFactory
+      abis:
+        - name: FairAuctionFactory
+          file: ./abis/FairAuctionFactory.json
+        - name: FairAuction
+          file: ./abis/FairAuction.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+      eventHandlers:
+        - event: FairAuctionCreation(indexed address,indexed address,indexed address,address,address,uint256,uint256,address,uint256,uint256,uint256,uint256)
+          handler: handleFairAuctionCreation
+templates:
+  - name: FairAuction
+    kind: ethereum/contract
+    network: eosevm-testnet
+    source:
+      abi: FairAuction
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/mappings/FairAuction.ts
+      entities:
+        - FairAuction
+        - FairAuctionPriceTracker
+      abis:
+        - name: FairAuction
+          file: ./abis/FairAuction.json
+      eventHandlers:
+        - event: Buy(indexed address,uint256)
+          handler: handleBuy
